@@ -1,3 +1,1 @@
-Campus-Course-Registration-System
-IT-2513 
-Students : Bakizhanov Emir , Narges Jowkar  
+Campus Course Registration System is our Java project for Object-Oriented Programming course. It is a simple console application where students can register to courses and manage enrollments. In this project we practiced OOP concepts, repository pattern and working with PostgreSQL database using JDBC. The system allow adding students and courses, enrolling students into courses, viewing all enrollments, and also removing registrations if it needed. The project is divided into different packages like ui for menu, models for entity classes, repositories for interfaces, and JDBC implementations for SQL queries. To run the project you need open it in IntelliJ, check database connection settings in DatabaseConnection.java, and start program from Main.java. This project was created by Emir Bakizhanov and Narges Jowkar from IT-2513
