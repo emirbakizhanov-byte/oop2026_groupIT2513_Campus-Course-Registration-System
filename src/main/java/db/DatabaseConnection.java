@@ -13,7 +13,7 @@ public class DatabaseConnection {
             "postgres.cyglbqrqwnuebwjjyuxz";
 
     private static final String PASSWORD =
-            "my_password"; // из Supabase Database Settings
+            "C3nzjmiRUTHAujv";
 
         public static Connection getConnection() {
             try {
