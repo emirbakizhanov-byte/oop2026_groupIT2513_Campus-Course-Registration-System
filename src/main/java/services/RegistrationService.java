@@ -1,15 +1,19 @@
 package services;
 
+import builders.StudentScheduleBuilder;
 import entities.Course;
 import entities.Enrollment;
 import entities.Student;
+import entities.StudentSchedule;
 import exceptions.*;
 
 import repositories.CourseRepository;
 import repositories.EnrollmentRepository;
 import repositories.StudentRepository;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RegistrationService {
     private final StudentRepository studentRepo;
@@ -70,6 +74,31 @@ public class RegistrationService {
     public List<Enrollment> listEnrollmentsForCourse(int courseId) {
         if (courseId <= 0) throw new InvalidInputException("courseId must be > 0");
         return enrollmentRepo.findByCourseId(courseId);
+    }
+
+
+    public StudentSchedule viewStudentSchedule(int studentId) {
+        if (studentId <= 0) throw new InvalidInputException("studentId must be > 0");
+
+
+        studentRepo.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
+
+        List<Enrollment> enrollments = enrollmentRepo.findByStudentId(studentId);
+
+        List<Course> courses = enrollments.stream()
+                .map(e -> courseRepo.findById(e.getCourseId()).orElse(null))
+                .filter(c -> c != null)
+
+                .sorted(Comparator
+                        .comparing(Course::getDayOfWeek, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparingInt(Course::getStartMinute))
+                .collect(Collectors.toList());
+
+        return new StudentScheduleBuilder()
+                .studentId(studentId)
+                .addCourses(courses)
+                .build();
     }
 
     // helper

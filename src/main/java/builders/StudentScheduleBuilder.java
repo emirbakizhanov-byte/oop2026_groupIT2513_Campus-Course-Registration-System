@@ -26,9 +26,7 @@ public class StudentScheduleBuilder {
     }
 
     public StudentSchedule build() {
-        // فعلاً totalCredits = تعداد course ها (اگر credit فیلد ندارید)
-        int totalCredits = courses.size() * 3; // یا courses.size()
-
+        int totalCredits = courses.size() * 3;
         StringBuilder sb = new StringBuilder();
         sb.append("=== Student Schedule ===\n");
         sb.append("StudentId: ").append(studentId).append("\n");

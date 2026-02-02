@@ -1,31 +1,18 @@
-import db.DatabaseConnection;
+import db.DatabaseConnectionManager;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class TestConnection {
     public static void main(String[] args) {
-
-        System.out.println("Connecting to Supabase...");
-
-        try (Connection connection = DatabaseConnection.getConnection()) {
-
-            System.out.println("Connected successfully!");
-
-            String sql = "SELECT CURRENT_TIMESTAMP";
-
-            try (PreparedStatement stmt = connection.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-
-                if (rs.next()) {
-                    System.out.println("Database time: " + rs.getTimestamp(1));
-                }
-            }
-
-        } catch (SQLException e) {
+        System.out.println("Connecting to DB...");
+        try (Connection c = DatabaseConnectionManager.getConnection()) {
+            System.out.println("DB CONNECTED ✅");
+            System.out.println("AutoCommit=" + c.getAutoCommit());
+        } catch (Exception e) {
+            System.out.println("DB FAILED ❌: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 }
+
