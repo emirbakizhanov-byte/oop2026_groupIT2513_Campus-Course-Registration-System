@@ -1,0 +1,95 @@
+[1mdiff --git a/src/main/java/builders/StudentScheduleBuilder.java b/src/main/java/builders/StudentScheduleBuilder.java[m
+[1mindex bc16c29..8d02ce0 100644[m
+[1m--- a/src/main/java/builders/StudentScheduleBuilder.java[m
+[1m+++ b/src/main/java/builders/StudentScheduleBuilder.java[m
+[36m@@ -27,16 +27,38 @@[m [mpublic class StudentScheduleBuilder {[m
+ [m
+     public StudentSchedule build() {[m
+         int totalCredits = courses.size() * 3;[m
+[32m+[m
+         StringBuilder sb = new StringBuilder();[m
+         sb.append("=== Student Schedule ===\n");[m
+         sb.append("StudentId: ").append(studentId).append("\n");[m
+         sb.append("Total credits: ").append(totalCredits).append("\n");[m
+[31m-        sb.append("Courses:\n");[m
+[32m+[m[32m        sb.append("-----------------------------------------\n");[m
+[32m+[m[32m        sb.append(String.format("%-3s %-16s %-5s %-7s %-7s%n", "#", "Course", "Day", "Start", "End"));[m
+[32m+[m
+[32m+[m[32m        int i = 1;[m
+         for (Course c : courses) {[m
+[31m-            sb.append(" - ").append(c).append("\n");[m
+[32m+[m[32m            String title = safe(c.getTitle());[m
+[32m+[m[32m            String day = safe(c.getDayOfWeek());[m
+[32m+[m[32m            String start = toHHMM(c.getStartMinute());[m
+[32m+[m[32m            String end = toHHMM(c.getEndMinute());[m
+[32m+[m
+[32m+[m[32m            sb.append(String.format("%-3d %-16s %-5s %-7s %-7s%n", i++, title, day, start, end));[m
+         }[m
+ [m
+[32m+[m[32m        sb.append("-----------------------------------------\n");[m
+[32m+[m
+         return new StudentSchedule(studentId, courses, totalCredits, sb.toString());[m
+     }[m
+[31m-}[m
+[32m+[m
+[32m+[m[32m    private String toHHMM(int minutes) {[m
+[32m+[m[32m        int h = minutes / 60;[m
+[32m+[m[32m        int m = minutes % 60;[m
+[32m+[m[32m        return String.format("%02d:%02d", h, m);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private String safe(String s) {[m
+[32m+[m[32m        return (s == null) ? "-" : s.trim();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    }[m
+[41m+[m
+ [m
+[1mdiff --git a/src/main/java/ui/ConsoleUI.java b/src/main/java/ui/ConsoleUI.java[m
+[1mindex 07e91f4..c5960c0 100644[m
+[1m--- a/src/main/java/ui/ConsoleUI.java[m
+[1m+++ b/src/main/java/ui/ConsoleUI.java[m
+[36m@@ -56,6 +56,7 @@[m [mpublic class ConsoleUI {[m
+                     case 8 -> viewEnrollmentsForCourse();[m
+                     case 9 -> deleteCourse();[m
+                     case 10 -> viewStudentSchedule();[m
+[32m+[m[32m                    case 11 -> courseService.printCoursesSortedByCapacity();[m
+                     case 0 -> {[m
+                         System.out.println("Bye!");[m
+                         return;[m
+[36m@@ -71,10 +72,11 @@[m [mpublic class ConsoleUI {[m
+     }[m
+ [m
+     private void seedData() {[m
+[32m+[m[32m        if (!courseRepo.findAll().isEmpty()) return;  // prevent duplicate seeding[m
+[32m+[m
+         studentRepo.create(new Student("Ali"));[m
+         studentRepo.create(new Student("Sara"));[m
+ [m
+[31m-[m
+         courseRepo.create(new Course("OOP", 2, "MON", 600, 720));[m
+         courseRepo.create(new Course("Database", 2, "MON", 700, 800));[m
+         courseRepo.create(new Course("Math", 3, "TUE", 600, 660));[m
+[36m@@ -92,6 +94,7 @@[m [mpublic class ConsoleUI {[m
+         System.out.println("8) View enrollments for a course");[m
+         System.out.println("9) Delete course");[m
+         System.out.println("10) View student schedule");[m
+[32m+[m[32m        System.out.println("11) Show courses sorted by capacity");[m
+         System.out.println("0) Exit");[m
+     }[m
+ [m
+[36m@@ -173,7 +176,14 @@[m [mpublic class ConsoleUI {[m
+         int courseId = readInt("Enter courseId: ");[m
+         List<Enrollment> list = registrationService.listEnrollmentsForCourse(courseId);[m
+         System.out.println("--- Enrollments for courseId=" + courseId + " ---");[m
+[31m-        list.forEach(System.out::println);[m
+[32m+[m[32m        list.stream()[m
+[32m+[m[32m                .sorted((a, b) -> {[m
+[32m+[m[32m                    int c = Integer.compare(a.getStudentId(), b.getStudentId());[m
+[32m+[m[32m                    if (c != 0) return c;[m
+[32m+[m[32m                    return Integer.compare(a.getCourseId(), b.getCourseId());[m
+[32m+[m[32m                })[m
+[32m+[m[32m                .forEach(System.out::println);[m
+[32m+[m
+     }[m
+ [m
+     private void deleteCourse() {[m

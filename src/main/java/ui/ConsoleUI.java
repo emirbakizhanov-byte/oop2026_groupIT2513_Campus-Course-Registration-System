@@ -1,8 +1,12 @@
 package ui;
 
 import entities.Course;
+import entities.CourseType;
 import entities.Enrollment;
 import entities.Student;
+import entities.StudentSchedule;
+import exceptions.InvalidInputException;
+import factories.CourseFactory;
 import repositories.CourseRepository;
 import repositories.EnrollmentRepository;
 import repositories.StudentRepository;
@@ -51,6 +55,8 @@ public class ConsoleUI {
                     case 7 -> listAllEnrollments();
                     case 8 -> viewEnrollmentsForCourse();
                     case 9 -> deleteCourse();
+                    case 10 -> viewStudentSchedule();
+                    case 11 -> courseService.printCoursesSortedByCapacity();
                     case 0 -> {
                         System.out.println("Bye!");
                         return;
@@ -66,6 +72,8 @@ public class ConsoleUI {
     }
 
     private void seedData() {
+        if (!courseRepo.findAll().isEmpty()) return;  // prevent duplicate seeding
+
         studentRepo.create(new Student("Ali"));
         studentRepo.create(new Student("Sara"));
 
@@ -85,6 +93,8 @@ public class ConsoleUI {
         System.out.println("7) List all enrollments");
         System.out.println("8) View enrollments for a course");
         System.out.println("9) Delete course");
+        System.out.println("10) View student schedule");
+        System.out.println("11) Show courses sorted by capacity");
         System.out.println("0) Exit");
     }
 
@@ -95,13 +105,36 @@ public class ConsoleUI {
     }
 
     private void createCourse() {
+        System.out.println("Select course type:");
+        System.out.println("1) Lecture");
+        System.out.println("2) Lab");
+        System.out.println("3) Online");
+
+        int typeChoice = readInt("Enter type (1-3): ");
+
+        CourseType type = switch (typeChoice) {
+            case 1 -> CourseType.LECTURE;
+            case 2 -> CourseType.LAB;
+            case 3 -> CourseType.ONLINE;
+            default -> throw new InvalidInputException("Invalid course type. Choose 1-3.");
+        };
+
         String title = readString("Enter course title: ");
         int capacity = readInt("Enter capacity: ");
         String day = readString("Enter dayOfWeek (MON/TUE/WED/THU/FRI): ");
         int start = readInt("Enter startMinute (e.g. 600 = 10:00): ");
         int end = readInt("Enter endMinute (e.g. 720 = 12:00): ");
 
-        Course created = courseRepo.create(new Course(title, capacity, day, start, end));
+        String extraPrompt = switch (type) {
+            case LECTURE -> "Enter hall (e.g. H-201): ";
+            case LAB -> "Enter lab room (e.g. Lab-101): ";
+            case ONLINE -> "Enter platform (e.g. Zoom/Moodle): ";
+        };
+        String extra = readString(extraPrompt);
+
+        Course courseToCreate = CourseFactory.createCourse(type, 0, title, capacity, day, start, end, extra);
+        Course created = courseRepo.create(courseToCreate);
+
         System.out.println("Created: " + created);
     }
 
@@ -143,13 +176,26 @@ public class ConsoleUI {
         int courseId = readInt("Enter courseId: ");
         List<Enrollment> list = registrationService.listEnrollmentsForCourse(courseId);
         System.out.println("--- Enrollments for courseId=" + courseId + " ---");
-        list.forEach(System.out::println);
+        list.stream()
+                .sorted((a, b) -> {
+                    int c = Integer.compare(a.getStudentId(), b.getStudentId());
+                    if (c != 0) return c;
+                    return Integer.compare(a.getCourseId(), b.getCourseId());
+                })
+                .forEach(System.out::println);
+
     }
 
     private void deleteCourse() {
         int courseId = readInt("Enter courseId: ");
         courseService.deleteCourse(courseId);
         System.out.println("SUCCESS: Course deleted.");
+    }
+
+    private void viewStudentSchedule() {
+        int studentId = readInt("Enter studentId: ");
+        StudentSchedule schedule = registrationService.viewStudentSchedule(studentId);
+        System.out.println(schedule.getSummary());
     }
 
     private int readInt(String prompt) {
@@ -168,3 +214,4 @@ public class ConsoleUI {
         return scanner.nextLine().trim();
     }
 }
+
