@@ -56,6 +56,7 @@ public class ConsoleUI {
                     case 8 -> viewEnrollmentsForCourse();
                     case 9 -> deleteCourse();
                     case 10 -> viewStudentSchedule();
+                    case 11 -> courseService.printCoursesSortedByCapacity();
                     case 0 -> {
                         System.out.println("Bye!");
                         return;
@@ -71,9 +72,10 @@ public class ConsoleUI {
     }
 
     private void seedData() {
+        if (!courseRepo.findAll().isEmpty()) return;  // prevent duplicate seeding
+
         studentRepo.create(new Student("Ali"));
         studentRepo.create(new Student("Sara"));
-
 
         courseRepo.create(new Course("OOP", 2, "MON", 600, 720));
         courseRepo.create(new Course("Database", 2, "MON", 700, 800));
@@ -92,6 +94,7 @@ public class ConsoleUI {
         System.out.println("8) View enrollments for a course");
         System.out.println("9) Delete course");
         System.out.println("10) View student schedule");
+        System.out.println("11) Show courses sorted by capacity");
         System.out.println("0) Exit");
     }
 
@@ -173,7 +176,14 @@ public class ConsoleUI {
         int courseId = readInt("Enter courseId: ");
         List<Enrollment> list = registrationService.listEnrollmentsForCourse(courseId);
         System.out.println("--- Enrollments for courseId=" + courseId + " ---");
-        list.forEach(System.out::println);
+        list.stream()
+                .sorted((a, b) -> {
+                    int c = Integer.compare(a.getStudentId(), b.getStudentId());
+                    if (c != 0) return c;
+                    return Integer.compare(a.getCourseId(), b.getCourseId());
+                })
+                .forEach(System.out::println);
+
     }
 
     private void deleteCourse() {
