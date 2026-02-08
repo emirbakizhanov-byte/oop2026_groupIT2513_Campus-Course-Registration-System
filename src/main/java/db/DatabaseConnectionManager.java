@@ -15,13 +15,14 @@ public final class DatabaseConnectionManager {
     private static final String PASSWORD =
             "EmirSupabase2026!";
 
-    private DatabaseConnectionManager() {}
+    private DatabaseConnectionManager() {
+    }
 
     public static Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (Exception e) {
-            throw new RuntimeException("DB connection failed", e);
+            throw new RuntimeException("Failed to connect to database", e);
         }
     }
 }

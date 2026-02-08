@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface CourseRepository extends Repository<Course, Integer> {
 
     Optional<Course> findById(int id);
+
     void deleteById(int id);
 
     @Override

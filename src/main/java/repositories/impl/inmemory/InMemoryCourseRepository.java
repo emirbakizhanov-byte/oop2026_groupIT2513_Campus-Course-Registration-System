@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class InMemoryCourseRepository implements CourseRepository {
+
     private final List<Course> courses = new ArrayList<>();
     private int nextId = 1;
 
@@ -27,7 +28,9 @@ public class InMemoryCourseRepository implements CourseRepository {
 
     @Override
     public Optional<Course> findById(int id) {
-        return courses.stream().filter(c -> c.getId() == id).findFirst();
+        return courses.stream()
+                .filter(c -> c.getId() == id)
+                .findFirst();
     }
 
     @Override
@@ -38,5 +41,16 @@ public class InMemoryCourseRepository implements CourseRepository {
     @Override
     public void deleteById(int id) {
         courses.removeIf(c -> c.getId() == id);
+    }
+
+
+    @Override
+    public Optional<Course> findById(Integer id) {
+        return findById(id.intValue());
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        deleteById(id.intValue());
     }
 }
